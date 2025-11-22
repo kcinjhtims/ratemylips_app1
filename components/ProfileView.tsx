@@ -230,7 +230,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack,
             </div>
         )}
         
-        <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/95 via-50% to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/80 via-30% to-transparent" />
         
         {/* Floating Lip Crop */}
         <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 z-20">
