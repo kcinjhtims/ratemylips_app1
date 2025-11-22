@@ -1,17 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
-import { Upload, Camera, X, ArrowRight, User as UserIcon, BarChart2 } from 'lucide-react';
+import { Upload, Camera, X, ArrowRight, User as UserIcon, BarChart2, Mail } from 'lucide-react';
 import { AppView, UserProfile, ScoringResult } from './types';
 import { LipCropper } from './components/LipCropper';
 import { Leaderboard } from './components/Leaderboard';
 import { ProfileView } from './components/ProfileView';
 import { Button } from './components/Button';
-import { calculateLipScore, simulateExtraction } from './services/scoringEngine';
+import { calculateLipScore, simulateExtraction, seedRandom, generateNickname } from './services/scoringEngine';
 import { MOCK_LEADERBOARD } from './services/mockData';
 
 const App = () => {
   // State
   const [currentView, setCurrentView] = useState<AppView>('onboarding');
+  const [userEmail, setUserEmail] = useState('');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [croppedLipImage, setCroppedLipImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -21,13 +22,20 @@ const App = () => {
   const [allowPublicFace, setAllowPublicFace] = useState(true);
 
   // Handlers
+  const handleEmailSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if(userEmail.includes('@')) {
+        setCurrentView('upload');
+    }
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
         setUploadedImage(event.target?.result as string);
-        setCroppedLipImage(null); // Reset crop to prevent ghosting of previous lips
+        setCroppedLipImage(null); 
         setCurrentView('crop');
       };
       reader.readAsDataURL(file);
@@ -43,20 +51,30 @@ const App = () => {
   const startAnalysis = async (activeCropUrl: string) => {
     setIsProcessing(true);
     
+    // 1. Initialize Seed based on Email + Image Data (Deterministic)
+    const uniqueString = userEmail + activeCropUrl.slice(0, 100); // Use email + image header as seed
+    seedRandom(uniqueString);
+
     // Simulate Network/Compute delay
     setTimeout(() => {
-        // 1. Extract Features (Simulated)
+        // 2. Extract Features (Using Seeded Randomness)
         const features = simulateExtraction();
         
-        // 2. Calculate Score (Actual Logic)
+        // 3. Calculate Score (Actual Logic)
         const result = calculateLipScore(features);
         
-        // 3. Create User Profile
+        // 4. Auto-Generate Nickname (Deterministic)
+        const autoNickname = generateNickname(result.totalScore, features);
+
+        // 5. Create User Profile
         const newUser: UserProfile = {
             id: Date.now().toString(),
-            nickname: 'You', // In a real app, prompt for this
+            email: userEmail,
+            fingerprint: uniqueString,
+            nickname: autoNickname,
             location_city: 'Unknown',
             location_country: 'Unknown',
+            country_code: 'US', // Default to US for now since we don't ask for country
             lip_image_url: activeCropUrl,
             face_image_url: uploadedImage || '',
             allow_full_face_public: allowPublicFace,
@@ -67,7 +85,7 @@ const App = () => {
             isCurrentUser: true
         };
 
-        // 4. Update Leaderboard
+        // 6. Update Leaderboard
         const updatedUsers = [...users, newUser].sort((a, b) => b.score - a.score);
         const rank = updatedUsers.findIndex(u => u.id === newUser.id) + 1;
         newUser.rank = rank;
@@ -89,9 +107,9 @@ const App = () => {
         RateMyLips
       </h1>
       <p className="text-gray-400 max-w-xs mb-12 text-lg leading-relaxed">
-        AI-powered aesthetic analysis for your lips. Discover your symmetry, shape score, and global rank.
+        AI-powered aesthetic analysis. Discover your symmetry, score, and global rank.
       </p>
-      <Button onClick={() => setCurrentView('upload')} className="w-full max-w-xs text-lg h-14">
+      <Button onClick={() => setCurrentView('email-input')} className="w-full max-w-xs text-lg h-14">
         Start Analysis
       </Button>
       <button 
@@ -100,6 +118,38 @@ const App = () => {
       >
         View Global Leaderboard
       </button>
+    </div>
+  );
+
+  const renderEmailInput = () => (
+    <div className="flex flex-col items-center justify-center min-h-screen p-6 animate-fade-in">
+        <div className="w-full max-w-sm">
+            <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Mail className="text-rose-400" size={32} />
+                </div>
+                <h2 className="text-2xl font-serif font-bold text-white mb-2">Verify Identity</h2>
+                <p className="text-gray-400 text-sm">We use your email to create a unique fingerprint for your lips. This prevents spam and ensures consistent scoring.</p>
+            </div>
+
+            <form onSubmit={handleEmailSubmit} className="space-y-4">
+                <input 
+                    type="email" 
+                    required
+                    placeholder="Enter your email"
+                    value={userEmail}
+                    onChange={(e) => setUserEmail(e.target.value)}
+                    className="w-full bg-card border border-gray-700 rounded-xl p-4 text-white focus:border-rose-500 focus:outline-none transition-colors"
+                />
+                <Button type="submit" className="w-full h-12">
+                    Continue <ArrowRight size={18} className="ml-2" />
+                </Button>
+            </form>
+            
+            <Button variant="ghost" onClick={() => setCurrentView('onboarding')} className="w-full mt-4">
+                Back
+            </Button>
+        </div>
     </div>
   );
 
@@ -125,8 +175,8 @@ const App = () => {
       </div>
       
       <div className="p-6">
-         <Button variant="ghost" onClick={() => setCurrentView('onboarding')} className="w-full">
-            Cancel
+         <Button variant="ghost" onClick={() => setCurrentView('email-input')} className="w-full">
+            Back
          </Button>
       </div>
     </div>
@@ -144,7 +194,7 @@ const App = () => {
          )}
       </div>
       <h3 className="text-xl font-bold text-white mt-8 animate-pulse">Analyzing Geometry...</h3>
-      <p className="text-gray-500 mt-2 text-sm">Checking symmetry, Cupid's bow, and texture.</p>
+      <p className="text-gray-500 mt-2 text-sm">Checking symmetry, Cupid's bow, and consistency.</p>
     </div>
   );
 
@@ -184,6 +234,8 @@ const App = () => {
     <div className="min-h-screen bg-dark text-white overflow-x-hidden">
         {currentView === 'onboarding' && renderOnboarding()}
         
+        {currentView === 'email-input' && renderEmailInput()}
+
         {currentView === 'upload' && renderUpload()}
         
         {currentView === 'crop' && uploadedImage && (

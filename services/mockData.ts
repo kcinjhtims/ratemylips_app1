@@ -4,9 +4,12 @@ import { UserProfile } from '../types';
 export const MOCK_LEADERBOARD: UserProfile[] = [
   {
     id: '1',
+    email: 'bella.s@example.com',
+    fingerprint: 'mock_fp_1',
     nickname: 'Bella_S',
     location_city: 'Milan',
     location_country: 'Italy',
+    country_code: 'IT',
     score: 9850,
     rank: 1,
     lip_image_url: 'https://picsum.photos/id/64/200/100',
@@ -16,7 +19,7 @@ export const MOCK_LEADERBOARD: UserProfile[] = [
       totalScore: 9850,
       rankScore: 98.5,
       lipArchetype: 'The Classic',
-      lipAge: 22,
+      cosmeticIntegrity: 98,
       goldenRatioMatch: 98,
       dimensionScores: {
         symmetry: 99, proportionHorizontal: 95, proportionVertical: 98, shape: 97, texture: 96, color: 95, naturalness: 98, pose: 100
@@ -29,9 +32,12 @@ export const MOCK_LEADERBOARD: UserProfile[] = [
   },
   {
     id: '2',
+    email: 'poutykate@example.com',
+    fingerprint: 'mock_fp_2',
     nickname: 'PoutyKate',
     location_city: 'London',
     location_country: 'UK',
+    country_code: 'GB',
     score: 9720,
     rank: 2,
     lip_image_url: 'https://picsum.photos/id/338/200/100',
@@ -41,7 +47,7 @@ export const MOCK_LEADERBOARD: UserProfile[] = [
       totalScore: 9720,
       rankScore: 97.2,
       lipArchetype: 'The Hollywood',
-      lipAge: 24,
+      cosmeticIntegrity: 95,
       goldenRatioMatch: 95,
       dimensionScores: {
         symmetry: 95, proportionHorizontal: 92, proportionVertical: 96, shape: 98, texture: 94, color: 96, naturalness: 95, pose: 99
@@ -54,9 +60,12 @@ export const MOCK_LEADERBOARD: UserProfile[] = [
   },
   {
     id: '3',
+    email: 'lipglow99@example.com',
+    fingerprint: 'mock_fp_3',
     nickname: 'LipGlow99',
     location_city: 'Seoul',
     location_country: 'South Korea',
+    country_code: 'KR',
     score: 9650,
     rank: 3,
     lip_image_url: 'https://picsum.photos/id/349/200/100',
@@ -66,7 +75,7 @@ export const MOCK_LEADERBOARD: UserProfile[] = [
         totalScore: 9650,
         rankScore: 96.5,
         lipArchetype: 'The Pillowy',
-        lipAge: 20,
+        cosmeticIntegrity: 90,
         goldenRatioMatch: 90,
         dimensionScores: {
           symmetry: 96, proportionHorizontal: 94, proportionVertical: 95, shape: 94, texture: 98, color: 93, naturalness: 96, pose: 98
@@ -79,9 +88,12 @@ export const MOCK_LEADERBOARD: UserProfile[] = [
   },
   {
     id: '4',
+    email: 'rougex@example.com',
+    fingerprint: 'mock_fp_4',
     nickname: 'RougeX',
     location_city: 'Paris',
     location_country: 'France',
+    country_code: 'FR',
     score: 9400,
     rank: 4,
     lip_image_url: 'https://picsum.photos/id/436/200/100',
@@ -91,7 +103,7 @@ export const MOCK_LEADERBOARD: UserProfile[] = [
         totalScore: 9400,
         rankScore: 94.0,
         lipArchetype: 'The Classic',
-        lipAge: 28,
+        cosmeticIntegrity: 97,
         goldenRatioMatch: 88,
         dimensionScores: {
           symmetry: 92, proportionHorizontal: 90, proportionVertical: 93, shape: 95, texture: 90, color: 98, naturalness: 92, pose: 95
@@ -104,9 +116,12 @@ export const MOCK_LEADERBOARD: UserProfile[] = [
   },
   {
     id: '5',
+    email: 'smilehigh@example.com',
+    fingerprint: 'mock_fp_5',
     nickname: 'SmileHigh',
     location_city: 'Los Angeles',
     location_country: 'USA',
+    country_code: 'US',
     score: 9105,
     rank: 5,
     lip_image_url: 'https://picsum.photos/id/129/200/100',
@@ -116,7 +131,7 @@ export const MOCK_LEADERBOARD: UserProfile[] = [
         totalScore: 9105,
         rankScore: 91.05,
         lipArchetype: 'The Wide Smile',
-        lipAge: 25,
+        cosmeticIntegrity: 85,
         goldenRatioMatch: 85,
         dimensionScores: {
           symmetry: 90, proportionHorizontal: 88, proportionVertical: 90, shape: 85, texture: 92, color: 88, naturalness: 94, pose: 95

@@ -28,6 +28,10 @@ export interface LipFeatures {
   wrinkle_roughness: number;
   vertical_crease_density: number;
   glossiness_index: number;
+  
+  // Cosmetic Integrity (New)
+  lumpy_texture_index: number; // Detects bad filler aggregation
+  filler_migration_index: number; // Detects "shelf" above lip
 
   // Color & Tone
   redness: number;
@@ -86,14 +90,16 @@ export type LipArchetype =
   | 'The Cupid' 
   | 'The Natural' 
   | 'The Wide Smile' 
-  | 'The Rosebud';
+  | 'The Rosebud'
+  | 'Botched Job' // Internal use mostly
+  | 'The Trout';  // Internal use mostly
 
 export interface ScoringResult {
   totalScore: number; // 0-10000
   rankScore: number; // 0-100
-  lipArchetype: LipArchetype; // New
-  lipAge: number; // New (Simulated biological age of lips)
+  lipArchetype: LipArchetype; 
   goldenRatioMatch: number; // 0-100 How close to 1:1.618
+  cosmeticIntegrity: number; // 0-100 (100 = Natural/Good Work, 0 = Botched)
   dimensionScores: {
     symmetry: number;
     proportionHorizontal: number;
@@ -109,9 +115,12 @@ export interface ScoringResult {
 
 export interface UserProfile {
   id: string;
+  email: string; // Consistency Key
+  fingerprint: string; // Biometric Hash
   nickname: string;
   location_city: string;
   location_country: string;
+  country_code?: string; // ISO 2-letter code for flag
   lip_image_url: string;
   face_image_url: string;
   allow_full_face_public: boolean;
@@ -122,4 +131,4 @@ export interface UserProfile {
   isCurrentUser?: boolean;
 }
 
-export type AppView = 'onboarding' | 'upload' | 'crop' | 'analyzing' | 'result' | 'profile' | 'leaderboard';
+export type AppView = 'onboarding' | 'email-input' | 'upload' | 'crop' | 'analyzing' | 'result' | 'profile' | 'leaderboard';

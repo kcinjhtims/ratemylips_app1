@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { UserProfile, ScoringResult } from '../types';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, PolarRadiusAxis, ScatterChart, Scatter, XAxis, YAxis, ZAxis, Tooltip, Cell, ReferenceLine } from 'recharts';
-import { Share2, MapPin, Shield, ArrowLeft, Activity, Palette, Sparkles, Droplets, Layers, BoxSelect, Grid, Trophy, Fingerprint, Ruler, Heart } from 'lucide-react';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, PolarRadiusAxis } from 'recharts';
+import { Share2, MapPin, Shield, ArrowLeft, Activity, Palette, Sparkles, Droplets, Layers, BoxSelect, Grid, Trophy, Fingerprint, Ruler, Heart, Edit2, Save } from 'lucide-react';
 import { Button } from './Button';
 
 interface ProfileViewProps {
@@ -14,6 +14,9 @@ interface ProfileViewProps {
 
 export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack, onShare }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'metrics' | 'insights'>('overview');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState(user.nickname);
+  const [displayNickname, setDisplayNickname] = useState(user.nickname);
 
   // Default values fallback
   const scores = scoring?.dimensionScores || {
@@ -26,7 +29,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack,
   };
 
   // --- Overview Data ---
-  // Radar Data (12 Points)
+  // Radar Data mapped EXACTLY to the metric labels used in "Weakest Link"
+  // The chart labels must match what the user sees in the text
   const radarData = [
     { subject: 'Sym', fullLabel: 'Symmetry', value: details.symmetryBalance, fullMark: 100 },
     { subject: 'Cupid', fullLabel: "Cupid's Bow", value: details.cupidBowPrecision, fullMark: 100 },
@@ -35,20 +39,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack,
     { subject: 'Width', fullLabel: 'Prop. Width', value: details.widthProportion, fullMark: 100 },
     { subject: 'Smooth', fullLabel: 'Smoothness', value: details.smoothness, fullMark: 100 },
     { subject: 'Hydro', fullLabel: 'Hydration', value: details.hydration, fullMark: 100 },
-    { subject: 'Color', fullLabel: 'Vitality', value: details.vitality, fullMark: 100 },
+    { subject: 'Vit', fullLabel: 'Vitality', value: details.vitality, fullMark: 100 }, // Fixed: was Color
     { subject: 'Even', fullLabel: 'Uniformity', value: details.uniformity, fullMark: 100 },
     { subject: 'Glow', fullLabel: 'Gloss', value: details.naturalGloss, fullMark: 100 },
     { subject: 'Nat', fullLabel: 'Naturalness', value: scores.naturalness, fullMark: 100 },
     { subject: 'Smile', fullLabel: 'Smile Potential', value: details.cornerUplift, fullMark: 100 },
   ];
-
-  // Comparison Data for Scatter Plot (Simulated Population)
-  const populationData = Array.from({ length: 20 }, () => ({
-    x: 40 + Math.random() * 50, // Fullness
-    y: 40 + Math.random() * 50, // Definition
-    z: 100 // size
-  }));
-  const userData = { x: details.verticalRatio, y: details.borderDefinition, z: 400 };
 
   // Dynamic Calculation of Strongest/Weakest
   const sortedMetrics = [...radarData].sort((a, b) => b.value - a.value);
@@ -130,6 +126,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack,
         'The Natural': 'bg-green-500/20 text-green-300 border-green-500/50',
         'The Wide Smile': 'bg-purple-500/20 text-purple-300 border-purple-500/50',
         'The Rosebud': 'bg-red-500/20 text-red-300 border-red-500/50',
+        'Botched Job': 'bg-gray-800 text-gray-400 border-gray-600',
+        'The Trout': 'bg-gray-800 text-gray-400 border-gray-600'
     };
     const style = colors[type] || colors['The Classic'];
 
@@ -172,20 +170,42 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack,
       </div>
   );
 
-  const LipAgeCard = ({ age }: { age: number }) => (
-      <div className="bg-card/50 p-4 rounded-xl border border-white/5 flex items-center justify-between">
-          <div>
-              <div className="flex items-center text-rose-300 mb-1">
-                  <Fingerprint size={16} className="mr-2" />
-                  <h4 className="text-sm font-bold uppercase tracking-wider">Est. Biological Lip Age</h4>
-              </div>
-              <p className="text-[10px] text-gray-400">Based on volume, border sharpness & texture</p>
-          </div>
-          <div className="text-3xl font-serif font-bold text-white">
-              {age} <span className="text-sm font-sans font-normal text-gray-500">yrs</span>
-          </div>
-      </div>
+  const CosmeticIntegrityScan = ({ score }: { score: number }) => (
+    <div className="bg-card/50 p-4 rounded-xl border border-white/5 mb-4">
+         <div className="flex justify-between items-center mb-2">
+             <div className="flex items-center text-blue-300">
+                 <Fingerprint size={16} className="mr-2" />
+                 <h4 className="text-sm font-bold uppercase tracking-wider">Cosmetic Integrity</h4>
+             </div>
+             <span className={`text-xs font-bold ${score > 80 ? 'text-green-400' : score > 50 ? 'text-yellow-400' : 'text-red-400'}`}>
+                 {score > 80 ? 'Natural / High Quality' : score > 50 ? 'Enhanced' : 'Integrity Compromised'}
+             </span>
+         </div>
+         <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden flex">
+             <div className="h-full bg-red-500 w-[30%] opacity-50"></div>
+             <div className="h-full bg-yellow-500 w-[30%] opacity-50"></div>
+             <div className="h-full bg-green-500 w-[40%] opacity-50"></div>
+         </div>
+         {/* Indicator */}
+         <div className="relative w-full h-2 -mt-2">
+              <div 
+                className="absolute top-0 h-3 w-1 bg-white shadow-[0_0_8px_white]" 
+                style={{ left: `${score}%`, transform: 'translateY(-2px)' }}
+              ></div>
+         </div>
+         <div className="flex justify-between mt-2 text-[9px] text-gray-500 uppercase font-bold">
+             <span>Botched</span>
+             <span>Enhanced</span>
+             <span>Natural</span>
+         </div>
+    </div>
   );
+
+  const handleSaveNickname = () => {
+      setIsEditingName(false);
+      setDisplayNickname(editedName);
+      // In real app, would propagate to user profile
+  };
 
   return (
     <div className="w-full min-h-screen bg-dark pb-24 animate-fade-in overflow-y-auto no-scrollbar">
@@ -232,7 +252,32 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack,
 
       {/* Basic Info */}
       <div className="mt-16 text-center px-6">
-        <h1 className="text-4xl font-serif font-bold text-white tracking-tight mb-2">{user.nickname}</h1>
+        <div className="flex items-center justify-center gap-2 mb-2">
+            {isEditingName ? (
+                <div className="flex items-center gap-2 animate-fade-in">
+                    <input 
+                        type="text" 
+                        value={editedName}
+                        onChange={(e) => setEditedName(e.target.value)}
+                        className="bg-card border border-rose-500/50 rounded px-2 py-1 text-xl font-serif font-bold text-white w-48 text-center focus:outline-none"
+                    />
+                    <button onClick={handleSaveNickname} className="p-1 bg-rose-600 rounded-full text-white">
+                        <Save size={14} />
+                    </button>
+                </div>
+            ) : (
+                <div className="flex items-center gap-2">
+                    <h1 className="text-3xl font-serif font-bold text-white tracking-tight">
+                        {displayNickname}
+                    </h1>
+                    {user.isCurrentUser && (
+                        <button onClick={() => setIsEditingName(true)} className="text-gray-500 hover:text-rose-400 transition-colors">
+                            <Edit2 size={14} />
+                        </button>
+                    )}
+                </div>
+            )}
+        </div>
         
         {scoring?.lipArchetype && <ArchetypeBadge type={scoring.lipArchetype} />}
 
@@ -248,7 +293,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack,
         {/* Score Hero */}
         <div className="mt-6 mb-8 relative">
             <div className="text-7xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-purple-200 to-rose-400 animate-pulse-slow">
-                {user.score}
+                {user.score.toLocaleString()}
             </div>
             <div className="text-xs text-gray-500 mt-2 font-mono">
                 RANK #{user.rank} • TOP {(user.rank / 50 * 100).toFixed(1)}%
@@ -300,38 +345,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack,
                         <GoldenRatioGauge matchScore={scoring.goldenRatioMatch} />
                     )}
 
-                    {/* 3. Lip Age */}
-                    {scoring?.lipAge !== undefined && (
-                        <LipAgeCard age={scoring.lipAge} />
+                    {/* 3. Cosmetic Integrity Scan (Replaces Lip Age / Scatter) */}
+                    {scoring?.cosmeticIntegrity !== undefined && (
+                        <CosmeticIntegrityScan score={scoring.cosmeticIntegrity} />
                     )}
 
-                    {/* 4. Scatter Plot (You vs World) */}
-                    <div className="bg-card/30 border border-white/5 rounded-xl p-4 mt-4">
-                         <div className="flex items-center justify-between mb-4">
-                             <div className="flex items-center text-rose-200">
-                                 <Trophy size={16} className="mr-2" />
-                                 <h4 className="text-sm font-bold uppercase tracking-wider">You vs. Global Avg</h4>
-                             </div>
-                             <div className="flex gap-3 text-[10px]">
-                                 <div className="flex items-center"><span className="w-2 h-2 rounded-full bg-rose-500 mr-1"></span> You</div>
-                                 <div className="flex items-center"><span className="w-2 h-2 rounded-full bg-gray-600 mr-1"></span> Others</div>
-                             </div>
-                         </div>
-                         <div className="h-48 w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <ScatterChart margin={{ top: 10, right: 10, bottom: 10, left: -20 }}>
-                                    <XAxis type="number" dataKey="x" name="Fullness" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} label={{ value: 'Fullness', position: 'insideBottom', offset: -5, fill: '#64748b', fontSize: 10 }} />
-                                    <YAxis type="number" dataKey="y" name="Definition" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} label={{ value: 'Definition', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10 }} />
-                                    <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#fff' }} />
-                                    
-                                    <Scatter name="Population" data={populationData} fill="#475569" shape="circle" />
-                                    <Scatter name="You" data={[userData]} fill="#e11d48" shape="star" />
-                                </ScatterChart>
-                            </ResponsiveContainer>
-                         </div>
-                    </div>
-
-                    {/* 5. Traits */}
+                    {/* 4. Traits */}
                     <div className="grid grid-cols-2 gap-4 mt-4">
                          <div className="bg-card p-4 rounded-2xl border border-white/5 shadow-lg shadow-rose-900/10">
                              <div className="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">Dominant Trait</div>
