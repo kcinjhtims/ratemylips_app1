@@ -1,54 +1,60 @@
 
 import React, { useState } from 'react';
 import { UserProfile, ScoringResult } from '../types';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, PolarRadiusAxis, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
-import { Share2, MapPin, Shield, ArrowLeft, Info, Activity, Palette, Sparkles } from 'lucide-react';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, PolarRadiusAxis, ScatterChart, Scatter, XAxis, YAxis, ZAxis, Tooltip, Cell, ReferenceLine } from 'recharts';
+import { Share2, MapPin, Shield, ArrowLeft, Activity, Palette, Sparkles, Droplets, Layers, BoxSelect, Grid, Trophy, Fingerprint, Ruler, Heart } from 'lucide-react';
 import { Button } from './Button';
 
 interface ProfileViewProps {
   user: UserProfile;
   scoring?: ScoringResult; 
   onBack: () => void;
+  onShare?: () => void;
 }
 
-export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack }) => {
+export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack, onShare }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'metrics' | 'insights'>('overview');
 
-  // Default values if scoring is missing (viewing other users in basic mode)
+  // Default values fallback
   const scores = scoring?.dimensionScores || {
-    symmetry: 85,
-    proportionHorizontal: 80,
-    proportionVertical: 90,
-    shape: 75,
-    texture: 88,
-    color: 92,
-    naturalness: 95,
-    pose: 100
+    symmetry: 0, proportionHorizontal: 0, proportionVertical: 0, shape: 0, texture: 0, color: 0, naturalness: 0, pose: 0
   };
 
   const details = scoring?.details || {
-    cupidBowPrecision: 70,
-    cornerDefinition: 80,
-    verticalRatio: 85,
-    smoothness: 80,
-    hydration: 85,
-    borderDefinition: 75,
-    vitality: 90,
-    uniformity: 95,
-    symmetryBalance: 85,
-    widthProportion: 80
+    cupidBowPrecision: 0, cornerDefinition: 0, verticalRatio: 0, smoothness: 0, hydration: 0, borderDefinition: 0, vitality: 0, uniformity: 0, symmetryBalance: 0, widthProportion: 0,
+    philtrumDepth: 0, vermilionContrast: 0, lateralVolume: 0, lowerLipPout: 0, verticalLineScore: 0, naturalGloss: 0, skinHealth: 0, pigmentationDepth: 0, gradientSmoothness: 0, upperLowerBalance: 0, cornerUplift: 0
   };
 
+  // --- Overview Data ---
+  // Radar Data (12 Points)
   const radarData = [
-    { subject: 'Sym', A: scores.symmetry, fullMark: 100 },
-    { subject: 'Prop', A: (scores.proportionHorizontal + scores.proportionVertical) / 2, fullMark: 100 },
-    { subject: 'Shape', A: scores.shape, fullMark: 100 },
-    { subject: 'Text', A: scores.texture, fullMark: 100 },
-    { subject: 'Color', A: scores.color, fullMark: 100 },
-    { subject: 'Nat', A: scores.naturalness, fullMark: 100 },
+    { subject: 'Sym', fullLabel: 'Symmetry', value: details.symmetryBalance, fullMark: 100 },
+    { subject: 'Cupid', fullLabel: "Cupid's Bow", value: details.cupidBowPrecision, fullMark: 100 },
+    { subject: 'Def', fullLabel: 'Definition', value: details.borderDefinition, fullMark: 100 },
+    { subject: 'Full', fullLabel: 'Fullness', value: details.verticalRatio, fullMark: 100 },
+    { subject: 'Width', fullLabel: 'Prop. Width', value: details.widthProportion, fullMark: 100 },
+    { subject: 'Smooth', fullLabel: 'Smoothness', value: details.smoothness, fullMark: 100 },
+    { subject: 'Hydro', fullLabel: 'Hydration', value: details.hydration, fullMark: 100 },
+    { subject: 'Color', fullLabel: 'Vitality', value: details.vitality, fullMark: 100 },
+    { subject: 'Even', fullLabel: 'Uniformity', value: details.uniformity, fullMark: 100 },
+    { subject: 'Glow', fullLabel: 'Gloss', value: details.naturalGloss, fullMark: 100 },
+    { subject: 'Nat', fullLabel: 'Naturalness', value: scores.naturalness, fullMark: 100 },
+    { subject: 'Smile', fullLabel: 'Smile Potential', value: details.cornerUplift, fullMark: 100 },
   ];
 
-  // Color scales for charts
+  // Comparison Data for Scatter Plot (Simulated Population)
+  const populationData = Array.from({ length: 20 }, () => ({
+    x: 40 + Math.random() * 50, // Fullness
+    y: 40 + Math.random() * 50, // Definition
+    z: 100 // size
+  }));
+  const userData = { x: details.verticalRatio, y: details.borderDefinition, z: 400 };
+
+  // Dynamic Calculation of Strongest/Weakest
+  const sortedMetrics = [...radarData].sort((a, b) => b.value - a.value);
+  const dominantTrait = sortedMetrics[0];
+  const weakestLink = sortedMetrics[sortedMetrics.length - 1];
+
   const getScoreColor = (score: number) => {
       if (score >= 90) return '#34d399'; // Emerald 400
       if (score >= 70) return '#e11d48'; // Rose 600
@@ -57,12 +63,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack 
   };
 
   const MetricBar = ({ label, value }: { label: string, value: number }) => (
-    <div className="mb-4">
-        <div className="flex justify-between text-xs font-bold mb-1 uppercase tracking-wider text-gray-400">
+    <div className="mb-3">
+        <div className="flex justify-between text-[10px] font-bold mb-1 uppercase tracking-wider text-gray-400">
             <span>{label}</span>
-            <span style={{ color: getScoreColor(value) }}>{value.toFixed(0)}/100</span>
+            <span style={{ color: getScoreColor(value) }}>{value.toFixed(0)}</span>
         </div>
-        <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
             <div 
                 className="h-full transition-all duration-1000 ease-out rounded-full"
                 style={{ 
@@ -74,13 +80,31 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack 
     </div>
   );
 
+  const MetricCategory = ({ title, icon: Icon, metrics }: any) => (
+      <div className="mb-6 bg-card/30 border border-white/5 rounded-xl p-4">
+          <h3 className="text-sm font-serif font-bold text-rose-200 mb-4 flex items-center border-b border-white/5 pb-2">
+              <Icon size={14} className="mr-2" /> {title}
+          </h3>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+              {metrics.map((m: any) => (
+                  <MetricBar key={m.label} label={m.label} value={m.value} />
+              ))}
+          </div>
+      </div>
+  );
+
   const InsightCard = ({ title, score, goodText, badText, icon: Icon }: any) => (
     <div className="bg-card/50 border border-white/5 p-4 rounded-xl mb-3">
-        <div className="flex items-center gap-3 mb-2">
-            <div className={`p-2 rounded-lg ${score >= 70 ? 'bg-green-500/10 text-green-400' : 'bg-rose-500/10 text-rose-400'}`}>
-                <Icon size={18} />
+        <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${score >= 70 ? 'bg-green-500/10 text-green-400' : 'bg-rose-500/10 text-rose-400'}`}>
+                    <Icon size={18} />
+                </div>
+                <h4 className="font-bold text-gray-200">{title}</h4>
             </div>
-            <h4 className="font-bold text-gray-200">{title}</h4>
+            <span className={`text-sm font-mono font-bold ${score >= 70 ? 'text-green-400' : 'text-rose-400'}`}>
+                {score.toFixed(0)}/100
+            </span>
         </div>
         <p className="text-sm text-gray-400 leading-relaxed">
             {score >= 70 ? goodText : badText}
@@ -88,20 +112,97 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack 
     </div>
   );
 
+  // Hand Wagging Icon for "Not Tellin'"
+  const WaggingHand = () => (
+    <div className="inline-block ml-1">
+        <span className="inline-block text-lg animate-[wiggle_0.5s_ease-in-out_infinite]">☝️</span>
+    </div>
+  );
+
+  // --- New Visual Components ---
+  
+  const ArchetypeBadge = ({ type }: { type: string }) => {
+    const colors: Record<string, string> = {
+        'The Cupid': 'bg-pink-500/20 text-pink-300 border-pink-500/50',
+        'The Hollywood': 'bg-amber-500/20 text-amber-300 border-amber-500/50',
+        'The Classic': 'bg-blue-500/20 text-blue-300 border-blue-500/50',
+        'The Pillowy': 'bg-rose-500/20 text-rose-300 border-rose-500/50',
+        'The Natural': 'bg-green-500/20 text-green-300 border-green-500/50',
+        'The Wide Smile': 'bg-purple-500/20 text-purple-300 border-purple-500/50',
+        'The Rosebud': 'bg-red-500/20 text-red-300 border-red-500/50',
+    };
+    const style = colors[type] || colors['The Classic'];
+
+    return (
+        <div className={`inline-flex items-center px-3 py-1 rounded-full border ${style} mb-4`}>
+             <Heart size={12} className="mr-2 fill-current" />
+             <span className="text-xs font-bold uppercase tracking-widest">{type}</span>
+        </div>
+    );
+  };
+
+  const GoldenRatioGauge = ({ matchScore }: { matchScore: number }) => (
+      <div className="bg-card/50 p-4 rounded-xl border border-white/5 mb-4">
+          <div className="flex justify-between items-center mb-2">
+              <div className="flex items-center text-amber-400">
+                  <Ruler size={16} className="mr-2" />
+                  <h4 className="text-sm font-bold uppercase tracking-wider">Golden Ratio (1:1.618)</h4>
+              </div>
+              <span className="text-xs font-mono text-gray-400">{matchScore.toFixed(0)}% Match</span>
+          </div>
+          <div className="relative h-4 bg-gray-800 rounded-full overflow-hidden">
+              {/* The Golden Spot Marker */}
+              <div className="absolute left-[61.8%] top-0 bottom-0 w-1 bg-amber-400 z-10 shadow-[0_0_10px_rgba(251,191,36,0.8)]"></div>
+              <div className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-gray-700 via-rose-500 to-gray-700 opacity-50" style={{ width: '100%' }}></div>
+              
+              {/* User Position (Simulated mapping 0-100 match to position around golden ratio) */}
+              <div 
+                className="absolute top-0 bottom-0 w-2 bg-white rounded-full transition-all duration-1000 ease-out"
+                style={{ 
+                    left: `${61.8 + (100 - matchScore) * (Math.random() > 0.5 ? 0.2 : -0.2)}%`,
+                    boxShadow: '0 0 8px white'
+                }}
+              />
+          </div>
+          <div className="flex justify-between mt-1 text-[10px] text-gray-500 font-mono">
+              <span>1:1</span>
+              <span className="text-amber-500 font-bold">1:1.618</span>
+              <span>1:2</span>
+          </div>
+      </div>
+  );
+
+  const LipAgeCard = ({ age }: { age: number }) => (
+      <div className="bg-card/50 p-4 rounded-xl border border-white/5 flex items-center justify-between">
+          <div>
+              <div className="flex items-center text-rose-300 mb-1">
+                  <Fingerprint size={16} className="mr-2" />
+                  <h4 className="text-sm font-bold uppercase tracking-wider">Est. Biological Lip Age</h4>
+              </div>
+              <p className="text-[10px] text-gray-400">Based on volume, border sharpness & texture</p>
+          </div>
+          <div className="text-3xl font-serif font-bold text-white">
+              {age} <span className="text-sm font-sans font-normal text-gray-500">yrs</span>
+          </div>
+      </div>
+  );
+
   return (
     <div className="w-full min-h-screen bg-dark pb-24 animate-fade-in overflow-y-auto no-scrollbar">
       {/* Header Image */}
-      <div className="relative w-full h-80 bg-gray-900">
+      <div className="relative w-full h-80 bg-gray-900 overflow-hidden">
         <Button variant="ghost" onClick={onBack} className="absolute top-4 left-4 z-30 bg-black/30 backdrop-blur-md text-white rounded-full p-2 hover:bg-black/50">
             <ArrowLeft size={24} />
         </Button>
         
         {user.allow_full_face_public && user.face_image_url ? (
-             <img 
-                src={user.face_image_url} 
-                alt="Full Face" 
-                className="w-full h-full object-cover opacity-40 blur-[1px]" 
-             />
+             <>
+                <img 
+                    src={user.face_image_url} 
+                    alt="Full Face" 
+                    className="w-full h-full object-cover opacity-30 blur-[2px]" 
+                />
+             </>
         ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-gray-800 to-dark">
                  <Shield className="text-gray-600 mb-2" size={48} />
@@ -109,7 +210,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack 
             </div>
         )}
         
-        <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/95 via-30% to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/95 via-50% to-transparent" />
         
         {/* Floating Lip Crop */}
         <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 z-20">
@@ -131,14 +232,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack 
 
       {/* Basic Info */}
       <div className="mt-16 text-center px-6">
-        <h1 className="text-4xl font-serif font-bold text-white tracking-tight">{user.nickname}</h1>
-        <div className="flex items-center justify-center text-rose-400 mt-2 text-sm font-medium uppercase tracking-widest">
+        <h1 className="text-4xl font-serif font-bold text-white tracking-tight mb-2">{user.nickname}</h1>
+        
+        {scoring?.lipArchetype && <ArchetypeBadge type={scoring.lipArchetype} />}
+
+        <div className="flex items-center justify-center text-rose-400 mt-1 text-sm font-medium uppercase tracking-widest">
             <MapPin size={12} className="mr-1" />
-            {user.location_city}, {user.location_country}
+            {user.location_city === 'Unknown' ? (
+                <span className="flex items-center">Not Tellin' <WaggingHand /></span>
+            ) : (
+                `${user.location_city}, ${user.location_country}`
+            )}
         </div>
 
         {/* Score Hero */}
-        <div className="mt-8 mb-8 relative">
+        <div className="mt-6 mb-8 relative">
             <div className="text-7xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-purple-200 to-rose-400 animate-pulse-slow">
                 {user.score}
             </div>
@@ -167,16 +275,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack 
         {/* Content Area */}
         <div className="max-w-md mx-auto min-h-[300px]">
             {activeTab === 'overview' && (
-                <div className="animate-fade-in">
-                    <div className="h-72 w-full relative mb-6">
+                <div className="animate-fade-in space-y-4">
+                    {/* 1. Radar Chart */}
+                    <div className="h-72 w-full relative">
                         <ResponsiveContainer width="100%" height="100%">
                             <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
                                 <PolarGrid gridType="polygon" stroke="#334155" strokeWidth={0.5} />
-                                <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 600 }} />
+                                <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 600 }} />
                                 <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
                                 <Radar
                                     name="Lips"
-                                    dataKey="A"
+                                    dataKey="value"
                                     stroke="#e11d48"
                                     strokeWidth={3}
                                     fill="#e11d48"
@@ -185,82 +294,155 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack 
                             </RadarChart>
                         </ResponsiveContainer>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                         <div className="bg-card p-4 rounded-2xl border border-white/5">
-                             <div className="text-gray-500 text-xs uppercase mb-1">Dominant Trait</div>
-                             <div className="text-xl font-bold text-rose-400">Naturalness</div>
+
+                    {/* 2. Golden Ratio Visual */}
+                    {scoring?.goldenRatioMatch !== undefined && (
+                        <GoldenRatioGauge matchScore={scoring.goldenRatioMatch} />
+                    )}
+
+                    {/* 3. Lip Age */}
+                    {scoring?.lipAge !== undefined && (
+                        <LipAgeCard age={scoring.lipAge} />
+                    )}
+
+                    {/* 4. Scatter Plot (You vs World) */}
+                    <div className="bg-card/30 border border-white/5 rounded-xl p-4 mt-4">
+                         <div className="flex items-center justify-between mb-4">
+                             <div className="flex items-center text-rose-200">
+                                 <Trophy size={16} className="mr-2" />
+                                 <h4 className="text-sm font-bold uppercase tracking-wider">You vs. Global Avg</h4>
+                             </div>
+                             <div className="flex gap-3 text-[10px]">
+                                 <div className="flex items-center"><span className="w-2 h-2 rounded-full bg-rose-500 mr-1"></span> You</div>
+                                 <div className="flex items-center"><span className="w-2 h-2 rounded-full bg-gray-600 mr-1"></span> Others</div>
+                             </div>
                          </div>
-                         <div className="bg-card p-4 rounded-2xl border border-white/5">
-                             <div className="text-gray-500 text-xs uppercase mb-1">Weakest Link</div>
-                             <div className="text-xl font-bold text-gray-300">Texture</div>
+                         <div className="h-48 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <ScatterChart margin={{ top: 10, right: 10, bottom: 10, left: -20 }}>
+                                    <XAxis type="number" dataKey="x" name="Fullness" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} label={{ value: 'Fullness', position: 'insideBottom', offset: -5, fill: '#64748b', fontSize: 10 }} />
+                                    <YAxis type="number" dataKey="y" name="Definition" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} label={{ value: 'Definition', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10 }} />
+                                    <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#fff' }} />
+                                    
+                                    <Scatter name="Population" data={populationData} fill="#475569" shape="circle" />
+                                    <Scatter name="You" data={[userData]} fill="#e11d48" shape="star" />
+                                </ScatterChart>
+                            </ResponsiveContainer>
+                         </div>
+                    </div>
+
+                    {/* 5. Traits */}
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                         <div className="bg-card p-4 rounded-2xl border border-white/5 shadow-lg shadow-rose-900/10">
+                             <div className="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">Dominant Trait</div>
+                             <div className="text-lg font-bold text-rose-400 truncate">{dominantTrait.fullLabel}</div>
+                             <div className="text-xs text-gray-400 mt-1 font-mono">{dominantTrait.value.toFixed(1)}/100</div>
+                         </div>
+                         <div className="bg-card p-4 rounded-2xl border border-white/5 shadow-lg shadow-black/20">
+                             <div className="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">Weakest Link</div>
+                             <div className="text-lg font-bold text-gray-300 truncate">{weakestLink.fullLabel}</div>
+                             <div className="text-xs text-gray-500 mt-1 font-mono">{weakestLink.value.toFixed(1)}/100</div>
                          </div>
                     </div>
                 </div>
             )}
 
             {activeTab === 'metrics' && (
-                <div className="text-left animate-fade-in space-y-8 px-2">
-                    <div>
-                        <h3 className="text-lg font-serif text-white mb-4 flex items-center">
-                            <Sparkles size={18} className="mr-2 text-yellow-400" /> Geometry & Shape
-                        </h3>
-                        <MetricBar label="Cupid's Bow Precision" value={details.cupidBowPrecision} />
-                        <MetricBar label="Symmetry Balance" value={details.symmetryBalance} />
-                        <MetricBar label="Vertical Ratio (Fullness)" value={details.verticalRatio} />
-                    </div>
+                <div className="text-left animate-fade-in px-2 pb-10">
+                    <div className="grid grid-cols-1 gap-4">
+                        <MetricCategory 
+                            title="Architecture (Shape)" 
+                            icon={BoxSelect}
+                            metrics={[
+                                { label: "Cupid's Bow", value: details.cupidBowPrecision },
+                                { label: "Philtrum Depth", value: details.philtrumDepth },
+                                { label: "Vermilion Contrast", value: details.vermilionContrast },
+                                { label: "Corner Definition", value: details.cornerDefinition },
+                                { label: "Lateral Volume", value: details.lateralVolume },
+                                { label: "Lower Lip Pout", value: details.lowerLipPout },
+                            ]}
+                        />
+                        
+                        <MetricCategory 
+                            title="Surface Ecology" 
+                            icon={Droplets}
+                            metrics={[
+                                { label: "Hydration", value: details.hydration },
+                                { label: "Smoothness", value: details.smoothness },
+                                { label: "Border Sharpness", value: details.borderDefinition },
+                                { label: "Vertical Lines", value: details.verticalLineScore },
+                                { label: "Natural Gloss", value: details.naturalGloss },
+                                { label: "Collagen/Health", value: details.skinHealth },
+                            ]}
+                        />
 
-                    <div>
-                        <h3 className="text-lg font-serif text-white mb-4 flex items-center">
-                            <Activity size={18} className="mr-2 text-blue-400" /> Health & Texture
-                        </h3>
-                        <MetricBar label="Hydration Level" value={details.hydration} />
-                        <MetricBar label="Surface Smoothness" value={details.smoothness} />
-                        <MetricBar label="Border Definition" value={details.borderDefinition} />
-                    </div>
-                    
-                    <div>
-                        <h3 className="text-lg font-serif text-white mb-4 flex items-center">
-                            <Palette size={18} className="mr-2 text-pink-400" /> Color Analysis
-                        </h3>
-                        <MetricBar label="Vitality (Redness)" value={details.vitality} />
-                        <MetricBar label="Tone Uniformity" value={details.uniformity} />
+                        <MetricCategory 
+                            title="Chromatic Depth" 
+                            icon={Palette}
+                            metrics={[
+                                { label: "Vitality", value: details.vitality },
+                                { label: "Uniformity", value: details.uniformity },
+                                { label: "Pigment Depth", value: details.pigmentationDepth },
+                                { label: "Gradient Smoothness", value: details.gradientSmoothness },
+                            ]}
+                        />
+
+                        <MetricCategory 
+                            title="Harmonic Ratios" 
+                            icon={Grid}
+                            metrics={[
+                                { label: "Symmetry Balance", value: details.symmetryBalance },
+                                { label: "Width Proportion", value: details.widthProportion },
+                                { label: "Vertical Ratio", value: details.verticalRatio },
+                                { label: "Upper/Lower Balance", value: details.upperLowerBalance },
+                                { label: "Smile Potential", value: details.cornerUplift },
+                            ]}
+                        />
                     </div>
                 </div>
             )}
 
             {activeTab === 'insights' && (
                 <div className="text-left animate-fade-in">
-                    <h3 className="text-lg font-serif text-white mb-6">AI Verdict</h3>
+                    <h3 className="text-lg font-serif text-white mb-6">Scientific Analysis</h3>
                     
                     <InsightCard 
-                        title="Hydration"
+                        title="Structural Harmony"
+                        icon={Layers}
+                        score={details.upperLowerBalance}
+                        goodText="Your upper-to-lower lip ratio approaches the 1:1.618 Golden Ratio. This balance is classically associated with high aesthetic appeal."
+                        badText="The vertical balance deviates from the Golden Ratio (1:1.618). This creates a distinctive look, though classical aesthetics favor the 1:1.6 proportion."
+                    />
+
+                    <InsightCard 
+                        title="Vermilion Definition"
+                        icon={BoxSelect}
+                        score={details.borderDefinition}
+                        goodText="High border definition detected. A crisp vermilion border suggests youthful collagen levels and strong structural integrity."
+                        badText="The vermilion border appears slightly blurred. This can occur naturally or with volume loss. Lip liner can artificially boost this score."
+                    />
+
+                    <InsightCard 
+                        title="Cupid's Bow Architecture"
+                        icon={Sparkles}
+                        score={details.cupidBowPrecision}
+                        goodText="Your Cupid's bow is distinct and well-defined. This 'M' shape is a key marker of the 'Classic' and 'Hollywood' archetypes."
+                        badText="Your Cupid's bow is softer and more rounded. This contributes to a 'Pillowy' or 'Natural' archetype rather than a structured one."
+                    />
+
+                    <InsightCard 
+                        title="Surface Hydration"
                         icon={Activity}
                         score={details.hydration}
-                        goodText="Excellent hydration detected. Your lips reflect light well, indicating good health and maintenance."
-                        badText="Detected signs of dryness or surface roughness. Consider using a hydrating balm to improve your texture score."
-                    />
-
-                    <InsightCard 
-                        title="Symmetry"
-                        icon={Sparkles}
-                        score={details.symmetryBalance}
-                        goodText="Your symmetry is nearly perfect. This is a rare trait that significantly boosts your overall aesthetic score."
-                        badText="Minor asymmetry detected between left and right sides. This is natural for 95% of humans, but affects the geometry score slightly."
-                    />
-
-                    <InsightCard 
-                        title="Color Vitality"
-                        icon={Palette}
-                        score={details.vitality}
-                        goodText="Strong natural pigmentation gives your lips a healthy, vibrant look without needing makeup."
-                        badText="Color analysis suggests slightly pale tones. This could be lighting-related, or a sign to boost circulation."
+                        goodText="Excellent light reflection indicates strong hydration. Healthy lips naturally reflect light in specific specular highlights."
+                        badText="Surface texture analysis suggests dryness or lack of gloss. Hydration is the fastest way to improve your overall score."
                     />
                 </div>
             )}
         </div>
 
         <div className="mt-12 mb-6">
-            <Button variant="primary" className="w-full">
+            <Button variant="primary" className="w-full" onClick={onShare}>
                 <Share2 size={18} className="mr-2" /> Share Analysis
             </Button>
         </div>

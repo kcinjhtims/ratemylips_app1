@@ -1,5 +1,5 @@
 {
-  "name": "Copy of RateMyLips",
+  "name": "RateMyLips",
   "description": "AI-powered lip analysis and scoring application featuring precise cropping, detailed feature extraction, and a global leaderboard.",
   "requestFramePermissions": [
     "camera"

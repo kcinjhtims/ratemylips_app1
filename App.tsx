@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Upload, Camera, X, ArrowRight, User as UserIcon, BarChart2 } from 'lucide-react';
 import { AppView, UserProfile, ScoringResult } from './types';
@@ -200,7 +201,8 @@ const App = () => {
                 <ProfileView 
                     user={currentUser} 
                     scoring={currentUser.scoringResult} 
-                    onBack={() => setCurrentView('leaderboard')} 
+                    onBack={() => setCurrentView('leaderboard')}
+                    onShare={() => setCurrentView('leaderboard')}
                 />
                 <BottomNav />
              </>
@@ -221,11 +223,11 @@ const App = () => {
 
         {currentView === 'profile' && selectedUser && (
              <ProfileView 
+                key={selectedUser.id}
                 user={selectedUser} 
-                // Start with empty scoring to simulate loading or privacy, 
-                // but in this mock we assume public profile view doesn't show detailed charts unless user is owner.
-                // However, for the demo, let's show charts for everyone.
-                onBack={() => setCurrentView('leaderboard')} 
+                scoring={selectedUser.scoringResult}
+                onBack={() => setCurrentView('leaderboard')}
+                onShare={() => setCurrentView('leaderboard')}
             />
         )}
     </div>
