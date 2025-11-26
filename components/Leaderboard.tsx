@@ -23,7 +23,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ users, onSelectUser })
           <div 
             key={user.id}
             onClick={() => onSelectUser(user)}
-            className="group bg-card/50 backdrop-blur-sm border border-white/5 rounded-lg py-1 px-3 flex items-center gap-3 cursor-pointer hover:bg-card/80 transition-all"
+            className="group bg-card/50 backdrop-blur-sm border border-white/5 rounded-lg py-3 px-3 flex items-center gap-3 cursor-pointer hover:bg-card/80 transition-all"
           >
             <div className="w-6 flex-shrink-0 flex justify-center">
               {user.rank <= 3 ? (
@@ -61,7 +61,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({ users, onSelectUser })
 
             <div className="text-right">
                 <div className="text-sm font-bold font-mono text-rose-400 tracking-tight">
-                    {user.score.toLocaleString()}
+                    {user.score}
                 </div>
             </div>
           </div>

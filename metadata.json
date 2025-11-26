@@ -1,6 +1,6 @@
 {
   "name": "RateMyLips",
-  "description": "AI-powered lip analysis and scoring application featuring precise cropping, detailed feature extraction, and a global leaderboard.",
+  "description": "AI-powered lip analysis application featuring real-time pixel scanning for color, contrast, and texture to determine aesthetic scores.",
   "requestFramePermissions": [
     "camera"
   ]

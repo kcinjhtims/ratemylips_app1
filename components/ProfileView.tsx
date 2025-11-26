@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { UserProfile, ScoringResult } from '../types';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, PolarRadiusAxis } from 'recharts';
@@ -11,6 +10,153 @@ interface ProfileViewProps {
   onBack: () => void;
   onShare?: () => void;
 }
+
+const getScoreColor = (score: number) => {
+    if (score >= 90) return '#34d399'; // Emerald 400
+    if (score >= 70) return '#e11d48'; // Rose 600
+    if (score >= 50) return '#f59e0b'; // Amber 500
+    return '#64748b'; // Slate 500
+};
+
+const MetricBar = ({ label, value }: { label: string, value: number }) => (
+  <div className="mb-3">
+      <div className="flex justify-between text-[10px] font-bold mb-1 uppercase tracking-wider text-gray-400">
+          <span>{label}</span>
+          <span style={{ color: getScoreColor(value) }}>{value.toFixed(0)}</span>
+      </div>
+      <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+          <div 
+              className="h-full transition-all duration-1000 ease-out rounded-full"
+              style={{ 
+                  width: `${value}%`,
+                  backgroundColor: getScoreColor(value)
+              }}
+          />
+      </div>
+  </div>
+);
+
+const MetricCategory = ({ title, icon: Icon, metrics }: any) => (
+    <div className="mb-6 bg-card/30 border border-white/5 rounded-xl p-4">
+        <h3 className="text-sm font-serif font-bold text-rose-200 mb-4 flex items-center border-b border-white/5 pb-2">
+            <Icon size={14} className="mr-2" /> {title}
+        </h3>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+            {metrics.map((m: any) => (
+                <MetricBar key={m.label} label={m.label} value={m.value} />
+            ))}
+        </div>
+    </div>
+);
+
+const InsightCard = ({ title, score, goodText, badText, icon: Icon }: any) => (
+  <div className="bg-card/50 border border-white/5 p-4 rounded-xl mb-3">
+      <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${score >= 70 ? 'bg-green-500/10 text-green-400' : 'bg-rose-500/10 text-rose-400'}`}>
+                  <Icon size={18} />
+              </div>
+              <h4 className="font-bold text-gray-200">{title}</h4>
+          </div>
+          <span className={`text-sm font-mono font-bold ${score >= 70 ? 'text-green-400' : 'text-rose-400'}`}>
+              {score.toFixed(0)}/100
+          </span>
+      </div>
+      <p className="text-sm text-gray-400 leading-relaxed">
+          {score >= 70 ? goodText : badText}
+      </p>
+  </div>
+);
+
+const WaggingHand = () => (
+  <div className="inline-block ml-1">
+      <span className="inline-block text-lg animate-[wiggle_0.5s_ease-in-out_infinite]">☝️</span>
+  </div>
+);
+
+const ArchetypeBadge = ({ type }: { type: string }) => {
+  const colors: Record<string, string> = {
+      'The Cupid': 'bg-pink-500/20 text-pink-300 border-pink-500/50',
+      'The Hollywood': 'bg-amber-500/20 text-amber-300 border-amber-500/50',
+      'The Classic': 'bg-blue-500/20 text-blue-300 border-blue-500/50',
+      'The Pillowy': 'bg-rose-500/20 text-rose-300 border-rose-500/50',
+      'The Natural': 'bg-green-500/20 text-green-300 border-green-500/50',
+      'The Wide Smile': 'bg-purple-500/20 text-purple-300 border-purple-500/50',
+      'The Rosebud': 'bg-red-500/20 text-red-300 border-red-500/50',
+      'Botched Job': 'bg-gray-800 text-gray-400 border-gray-600',
+      'The Trout': 'bg-gray-800 text-gray-400 border-gray-600'
+  };
+  const style = colors[type] || colors['The Classic'];
+
+  return (
+      <div className={`inline-flex items-center px-3 py-1 rounded-full border ${style} mb-4`}>
+           <Heart size={12} className="mr-2 fill-current" />
+           <span className="text-xs font-bold uppercase tracking-widest">{type}</span>
+      </div>
+  );
+};
+
+const GoldenRatioGauge = ({ matchScore }: { matchScore: number }) => (
+    <div className="bg-card/50 p-4 rounded-xl border border-white/5 mb-4">
+        <div className="flex justify-between items-center mb-2">
+            <div className="flex items-center text-amber-400">
+                <Ruler size={16} className="mr-2" />
+                <h4 className="text-sm font-bold uppercase tracking-wider">Golden Ratio (1:1.618)</h4>
+            </div>
+            <span className="text-xs font-mono text-gray-400">{matchScore.toFixed(0)}% Match</span>
+        </div>
+        <div className="relative h-4 bg-gray-800 rounded-full overflow-hidden">
+            {/* The Golden Spot Marker */}
+            <div className="absolute left-[61.8%] top-0 bottom-0 w-1 bg-amber-400 z-10 shadow-[0_0_10px_rgba(251,191,36,0.8)]"></div>
+            <div className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-gray-700 via-rose-500 to-gray-700 opacity-50" style={{ width: '100%' }}></div>
+            
+            {/* User Position (Simulated mapping 0-100 match to position around golden ratio) */}
+            <div 
+              className="absolute top-0 bottom-0 w-2 bg-white rounded-full transition-all duration-1000 ease-out"
+              style={{ 
+                  left: `${61.8 + (100 - matchScore) * (Math.random() > 0.5 ? 0.2 : -0.2)}%`,
+                  boxShadow: '0 0 8px white'
+              }}
+            />
+        </div>
+        <div className="flex justify-between mt-1 text-[10px] text-gray-500 font-mono">
+            <span>1:1</span>
+            <span className="text-amber-500 font-bold">1:1.618</span>
+            <span>1:2</span>
+        </div>
+    </div>
+);
+
+const CosmeticIntegrityScan = ({ score }: { score: number }) => (
+  <div className="bg-card/50 p-4 rounded-xl border border-white/5 mb-4">
+       <div className="flex justify-between items-center mb-2">
+           <div className="flex items-center text-blue-300">
+               <Fingerprint size={16} className="mr-2" />
+               <h4 className="text-sm font-bold uppercase tracking-wider">Cosmetic Integrity</h4>
+           </div>
+           <span className={`text-xs font-bold ${score > 80 ? 'text-green-400' : score > 50 ? 'text-yellow-400' : 'text-red-400'}`}>
+               {score > 80 ? 'Natural / High Quality' : score > 50 ? 'Enhanced' : 'Integrity Compromised'}
+           </span>
+       </div>
+       <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden flex">
+           <div className="h-full bg-red-500 w-[30%] opacity-50"></div>
+           <div className="h-full bg-yellow-500 w-[30%] opacity-50"></div>
+           <div className="h-full bg-green-500 w-[40%] opacity-50"></div>
+       </div>
+       {/* Indicator */}
+       <div className="relative w-full h-2 -mt-2">
+            <div 
+              className="absolute top-0 h-3 w-1 bg-white shadow-[0_0_8px_white]" 
+              style={{ left: `${score}%`, transform: 'translateY(-2px)' }}
+            ></div>
+       </div>
+       <div className="flex justify-between mt-2 text-[9px] text-gray-500 uppercase font-bold">
+           <span>Botched</span>
+           <span>Enhanced</span>
+           <span>Natural</span>
+       </div>
+  </div>
+);
 
 export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack, onShare }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'metrics' | 'insights'>('overview');
@@ -51,156 +197,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack,
   const dominantTrait = sortedMetrics[0];
   const weakestLink = sortedMetrics[sortedMetrics.length - 1];
 
-  const getScoreColor = (score: number) => {
-      if (score >= 90) return '#34d399'; // Emerald 400
-      if (score >= 70) return '#e11d48'; // Rose 600
-      if (score >= 50) return '#f59e0b'; // Amber 500
-      return '#64748b'; // Slate 500
-  };
-
-  const MetricBar = ({ label, value }: { label: string, value: number }) => (
-    <div className="mb-3">
-        <div className="flex justify-between text-[10px] font-bold mb-1 uppercase tracking-wider text-gray-400">
-            <span>{label}</span>
-            <span style={{ color: getScoreColor(value) }}>{value.toFixed(0)}</span>
-        </div>
-        <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-            <div 
-                className="h-full transition-all duration-1000 ease-out rounded-full"
-                style={{ 
-                    width: `${value}%`,
-                    backgroundColor: getScoreColor(value)
-                }}
-            />
-        </div>
-    </div>
-  );
-
-  const MetricCategory = ({ title, icon: Icon, metrics }: any) => (
-      <div className="mb-6 bg-card/30 border border-white/5 rounded-xl p-4">
-          <h3 className="text-sm font-serif font-bold text-rose-200 mb-4 flex items-center border-b border-white/5 pb-2">
-              <Icon size={14} className="mr-2" /> {title}
-          </h3>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-              {metrics.map((m: any) => (
-                  <MetricBar key={m.label} label={m.label} value={m.value} />
-              ))}
-          </div>
-      </div>
-  );
-
-  const InsightCard = ({ title, score, goodText, badText, icon: Icon }: any) => (
-    <div className="bg-card/50 border border-white/5 p-4 rounded-xl mb-3">
-        <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${score >= 70 ? 'bg-green-500/10 text-green-400' : 'bg-rose-500/10 text-rose-400'}`}>
-                    <Icon size={18} />
-                </div>
-                <h4 className="font-bold text-gray-200">{title}</h4>
-            </div>
-            <span className={`text-sm font-mono font-bold ${score >= 70 ? 'text-green-400' : 'text-rose-400'}`}>
-                {score.toFixed(0)}/100
-            </span>
-        </div>
-        <p className="text-sm text-gray-400 leading-relaxed">
-            {score >= 70 ? goodText : badText}
-        </p>
-    </div>
-  );
-
-  // Hand Wagging Icon for "Not Tellin'"
-  const WaggingHand = () => (
-    <div className="inline-block ml-1">
-        <span className="inline-block text-lg animate-[wiggle_0.5s_ease-in-out_infinite]">☝️</span>
-    </div>
-  );
-
-  // --- New Visual Components ---
-  
-  const ArchetypeBadge = ({ type }: { type: string }) => {
-    const colors: Record<string, string> = {
-        'The Cupid': 'bg-pink-500/20 text-pink-300 border-pink-500/50',
-        'The Hollywood': 'bg-amber-500/20 text-amber-300 border-amber-500/50',
-        'The Classic': 'bg-blue-500/20 text-blue-300 border-blue-500/50',
-        'The Pillowy': 'bg-rose-500/20 text-rose-300 border-rose-500/50',
-        'The Natural': 'bg-green-500/20 text-green-300 border-green-500/50',
-        'The Wide Smile': 'bg-purple-500/20 text-purple-300 border-purple-500/50',
-        'The Rosebud': 'bg-red-500/20 text-red-300 border-red-500/50',
-        'Botched Job': 'bg-gray-800 text-gray-400 border-gray-600',
-        'The Trout': 'bg-gray-800 text-gray-400 border-gray-600'
-    };
-    const style = colors[type] || colors['The Classic'];
-
-    return (
-        <div className={`inline-flex items-center px-3 py-1 rounded-full border ${style} mb-4`}>
-             <Heart size={12} className="mr-2 fill-current" />
-             <span className="text-xs font-bold uppercase tracking-widest">{type}</span>
-        </div>
-    );
-  };
-
-  const GoldenRatioGauge = ({ matchScore }: { matchScore: number }) => (
-      <div className="bg-card/50 p-4 rounded-xl border border-white/5 mb-4">
-          <div className="flex justify-between items-center mb-2">
-              <div className="flex items-center text-amber-400">
-                  <Ruler size={16} className="mr-2" />
-                  <h4 className="text-sm font-bold uppercase tracking-wider">Golden Ratio (1:1.618)</h4>
-              </div>
-              <span className="text-xs font-mono text-gray-400">{matchScore.toFixed(0)}% Match</span>
-          </div>
-          <div className="relative h-4 bg-gray-800 rounded-full overflow-hidden">
-              {/* The Golden Spot Marker */}
-              <div className="absolute left-[61.8%] top-0 bottom-0 w-1 bg-amber-400 z-10 shadow-[0_0_10px_rgba(251,191,36,0.8)]"></div>
-              <div className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-gray-700 via-rose-500 to-gray-700 opacity-50" style={{ width: '100%' }}></div>
-              
-              {/* User Position (Simulated mapping 0-100 match to position around golden ratio) */}
-              <div 
-                className="absolute top-0 bottom-0 w-2 bg-white rounded-full transition-all duration-1000 ease-out"
-                style={{ 
-                    left: `${61.8 + (100 - matchScore) * (Math.random() > 0.5 ? 0.2 : -0.2)}%`,
-                    boxShadow: '0 0 8px white'
-                }}
-              />
-          </div>
-          <div className="flex justify-between mt-1 text-[10px] text-gray-500 font-mono">
-              <span>1:1</span>
-              <span className="text-amber-500 font-bold">1:1.618</span>
-              <span>1:2</span>
-          </div>
-      </div>
-  );
-
-  const CosmeticIntegrityScan = ({ score }: { score: number }) => (
-    <div className="bg-card/50 p-4 rounded-xl border border-white/5 mb-4">
-         <div className="flex justify-between items-center mb-2">
-             <div className="flex items-center text-blue-300">
-                 <Fingerprint size={16} className="mr-2" />
-                 <h4 className="text-sm font-bold uppercase tracking-wider">Cosmetic Integrity</h4>
-             </div>
-             <span className={`text-xs font-bold ${score > 80 ? 'text-green-400' : score > 50 ? 'text-yellow-400' : 'text-red-400'}`}>
-                 {score > 80 ? 'Natural / High Quality' : score > 50 ? 'Enhanced' : 'Integrity Compromised'}
-             </span>
-         </div>
-         <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden flex">
-             <div className="h-full bg-red-500 w-[30%] opacity-50"></div>
-             <div className="h-full bg-yellow-500 w-[30%] opacity-50"></div>
-             <div className="h-full bg-green-500 w-[40%] opacity-50"></div>
-         </div>
-         {/* Indicator */}
-         <div className="relative w-full h-2 -mt-2">
-              <div 
-                className="absolute top-0 h-3 w-1 bg-white shadow-[0_0_8px_white]" 
-                style={{ left: `${score}%`, transform: 'translateY(-2px)' }}
-              ></div>
-         </div>
-         <div className="flex justify-between mt-2 text-[9px] text-gray-500 uppercase font-bold">
-             <span>Botched</span>
-             <span>Enhanced</span>
-             <span>Natural</span>
-         </div>
-    </div>
-  );
-
   const handleSaveNickname = () => {
       setIsEditingName(false);
       setDisplayNickname(editedName);
@@ -215,26 +211,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack,
             <ArrowLeft size={24} />
         </Button>
         
-        {user.allow_full_face_public && user.face_image_url ? (
-             <>
-                <img 
-                    src={user.face_image_url} 
-                    alt="Full Face" 
-                    className="w-full h-full object-cover opacity-30 blur-[2px]" 
-                />
-             </>
-        ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-gray-800 to-dark">
-                 <Shield className="text-gray-600 mb-2" size={48} />
-                 <p className="text-gray-500 absolute bottom-4 font-serif italic">Full face is private</p>
-            </div>
-        )}
-        
-        <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/80 via-30% to-transparent" />
-        
-        {/* Floating Lip Crop */}
-        <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 z-20">
-             <div className="w-48 h-24 rounded-full p-[2px] bg-gradient-to-b from-rose-400 to-purple-600 shadow-2xl shadow-rose-500/30">
+        {/* Floating Lip Crop positioned relative to header but overlapping due to positioning */}
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 z-20 w-48 h-24">
+             <div className="w-full h-full rounded-full p-[2px] bg-gradient-to-b from-rose-400 to-purple-600 shadow-2xl shadow-rose-500/30">
                  <div className="w-full h-full rounded-full overflow-hidden relative bg-black">
                     {user.lip_image_url ? (
                         <img 
@@ -247,6 +226,23 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack,
                     )}
                  </div>
             </div>
+        </div>
+
+        {/* Background Face Image Container - Needs overflow hidden */}
+        <div className="w-full h-full overflow-hidden relative">
+            {user.allow_full_face_public && user.face_image_url ? (
+                 <img 
+                    src={user.face_image_url} 
+                    alt="Full Face" 
+                    className="w-full h-full object-cover opacity-30 blur-[2px]" 
+                 />
+            ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-gray-800 to-dark">
+                     <Shield className="text-gray-600 mb-2" size={48} />
+                     <p className="text-gray-500 absolute bottom-4 font-serif italic">Full face is private</p>
+                </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/80 via-30% to-transparent" />
         </div>
       </div>
 
@@ -293,7 +289,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, scoring, onBack,
         {/* Score Hero */}
         <div className="mt-6 mb-8 relative">
             <div className="text-7xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-purple-200 to-rose-400 animate-pulse-slow">
-                {user.score.toLocaleString()}
+                {user.score}
             </div>
             <div className="text-xs text-gray-500 mt-2 font-mono">
                 RANK #{user.rank} • TOP {(user.rank / 50 * 100).toFixed(1)}%

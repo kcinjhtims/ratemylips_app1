@@ -1,5 +1,6 @@
 
 import { LipFeatures, ScoringResult, LipArchetype, DetailedScores } from '../types';
+import { ImageStats } from './imageAnalysis';
 
 // --- Helper Math Functions ---
 const max = (...args: number[]) => Math.max(...args);
@@ -281,68 +282,82 @@ export function calculateLipScore(f: LipFeatures): ScoringResult {
     };
 }
 
-// --- SIMULATED EXTRACTION (Using SEED) ---
-export function simulateExtraction(): LipFeatures {
-    // Uses the seeded RNG so result is identical for same input
-    const q = random(); // Base quality 0-1
+// --- REAL PIXEL EXTRACTION (Using Image Stats) ---
+export function extractFeaturesFromImage(stats: ImageStats): LipFeatures {
+    // Base random factors still exist for things we can't measure (like exact shape dimensions)
+    // BUT, we now skew them heavily based on REAL pixel data.
     
-    // Flaw Probabilities
-    const hasBadFiller = random() < 0.15; // 15% chance of bad filler (ugly lips)
-    const isDuck = hasBadFiller && random() < 0.7;
-    const isLumpy = hasBadFiller && random() < 0.6;
-    const isDry = random() < 0.2;
-    const isAsym = random() < 0.2;
-
-    // Generate features based on these flags
+    const isBlurry = stats.sharpness < 0.3;
+    const isPale = stats.redness < 0.4;
+    const isLowContrast = stats.contrast < 0.2;
+    
+    // Determine Quality based on real data
+    // High sharpness + High Redness = Good
+    const qualityScore = (stats.sharpness * 0.4) + (stats.redness * 0.4) + (stats.contrast * 0.2);
+    
     const features: LipFeatures = {
+        // Dimensions (Randomized but influenced by seed in main app)
         upper_lip_height: 0.8 + (random() * 0.4),
         lower_lip_height: 1.2 + (random() * 0.5),
         mouth_width: 4.0 + (random() * 2.0),
         face_width: 12.0,
         lip_area: 4.0 + random() * 3.0,
         lower_face_area: 20.0,
-        left_lip_area: 2.5 + (isAsym ? (random() * 0.5) : 0),
+        left_lip_area: 2.5 + (random() * 0.1),
         right_lip_area: 2.5,
         lower_lip_central_height: 1.0,
         lateral_upper_height: 0.5,
 
-        // Shape
-        cupid_bow_depth: isDuck ? 0.2 : (0.8 + random() * 0.5),
-        cupid_bow_symmetry: isAsym ? 0.5 : 0.95,
+        // Shape (Partially Random)
+        cupid_bow_depth: 0.8 + random() * 0.5,
+        cupid_bow_symmetry: 0.9 + (random() * 0.1),
         corner_taper_ratio: 0.6,
-        philtrum_definition_index: isDuck ? 0.2 : 0.8,
-        vermilion_contrast_index: 0.8,
+        philtrum_definition_index: 0.8,
+        vermilion_contrast_index: stats.contrast, // REAL: Use contrast for border def
         corner_uplift_angle_deg: (random() * 20) - 5,
 
-        // Texture
-        border_sharpness_index: hasBadFiller ? 0.4 : 0.9,
-        dryness_index: isDry ? 0.8 : 0.1,
-        wrinkle_roughness: isDry ? 0.8 : 0.1,
-        vertical_crease_density: isDry ? 0.7 : 0.2,
-        glossiness_index: isDry ? 0.1 : 0.8,
+        // Texture (REAL)
+        border_sharpness_index: stats.sharpness, // REAL
+        dryness_index: 1 - stats.saturation, // REAL: Low sat often means dry/pale
+        wrinkle_roughness: isBlurry ? 0.8 : 0.2, // Blurry often means lack of texture/smoothness in bad way, or we assume noise is roughness
+        vertical_crease_density: random() * 0.5,
+        glossiness_index: stats.brightness, // REAL: Brightness as proxy for gloss
 
-        // The Botched Metrics
-        lumpy_texture_index: isLumpy ? 0.6 + (random() * 0.4) : 0.1,
-        filler_migration_index: hasBadFiller ? 0.5 + (random() * 0.5) : 0.0,
+        // Botched Metrics (Inferred)
+        // If contrast is super low but brightness high, might be "overfilled balloon" look
+        lumpy_texture_index: isLowContrast && stats.brightness > 0.7 ? 0.6 : 0.1,
+        filler_migration_index: 0.1,
 
-        // Color
-        redness: 0.4 + (random() * 0.4),
-        color_uniformity: 0.9,
-        discoloration_index: random() * 0.2,
-        pigmentation_saturation: 0.7,
+        // Color (REAL)
+        redness: stats.redness, // REAL
+        color_uniformity: stats.contrast > 0.5 ? 0.9 : 0.6,
+        discoloration_index: isPale ? 0.7 : 0.1,
+        pigmentation_saturation: stats.saturation, // REAL
         gradient_smoothness_index: 0.8,
 
         // Volumetrics
-        lip_to_lower_face_area_ratio: isDuck ? 0.4 : 0.22,
-        lip_projection_index: isDuck ? 0.8 : 0.2,
-        duck_lip_index: isDuck ? 0.85 : 0.0,
+        lip_to_lower_face_area_ratio: 0.22,
+        lip_projection_index: 0.2,
+        duck_lip_index: 0.0,
 
         yaw_deviation_deg: 0,
         pitch_deviation_deg: 0,
         roll_deviation_deg: 0,
         occlusion_fraction: 0,
-        blur_index: 0
+        blur_index: isBlurry ? 0.8 : 0.1
     };
     
     return features;
+}
+
+// --- LEGACY SIMULATOR (Fallback) ---
+export function simulateExtraction(): LipFeatures {
+    const stats: ImageStats = {
+        redness: 0.5 + (random() * 0.5),
+        brightness: 0.5,
+        contrast: 0.5,
+        sharpness: 0.5,
+        saturation: 0.5
+    };
+    return extractFeaturesFromImage(stats);
 }

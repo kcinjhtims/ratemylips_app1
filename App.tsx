@@ -6,7 +6,8 @@ import { LipCropper } from './components/LipCropper';
 import { Leaderboard } from './components/Leaderboard';
 import { ProfileView } from './components/ProfileView';
 import { Button } from './components/Button';
-import { calculateLipScore, simulateExtraction, seedRandom, generateNickname } from './services/scoringEngine';
+import { calculateLipScore, extractFeaturesFromImage, seedRandom, generateNickname } from './services/scoringEngine';
+import { analyzeImagePixels } from './services/imageAnalysis';
 import { MOCK_LEADERBOARD } from './services/mockData';
 
 const App = () => {
@@ -52,52 +53,56 @@ const App = () => {
     setIsProcessing(true);
     
     // 1. Initialize Seed based on Email + Image Data (Deterministic)
-    const uniqueString = userEmail + activeCropUrl.slice(0, 100); // Use email + image header as seed
+    const uniqueString = userEmail + activeCropUrl.slice(0, 100); 
     seedRandom(uniqueString);
 
-    // Simulate Network/Compute delay
-    setTimeout(() => {
-        // 2. Extract Features (Using Seeded Randomness)
-        const features = simulateExtraction();
+    // 2. PERFORM REAL COMPUTER VISION ANALYSIS
+    try {
+        const realImageStats = await analyzeImagePixels(activeCropUrl);
         
-        // 3. Calculate Score (Actual Logic)
-        const result = calculateLipScore(features);
-        
-        // 4. Auto-Generate Nickname (Deterministic)
-        const autoNickname = generateNickname(result.totalScore, features);
+        // Simulate Network/Compute delay
+        setTimeout(() => {
+            // 3. Extract Features using REAL stats + Seeded Randomness for shape
+            const features = extractFeaturesFromImage(realImageStats);
+            
+            // 4. Calculate Score
+            const result = calculateLipScore(features);
+            
+            // 5. Auto-Generate Nickname
+            const autoNickname = generateNickname(result.totalScore, features);
 
-        // 5. Create User Profile
-        const newUser: UserProfile = {
-            id: Date.now().toString(),
-            email: userEmail,
-            fingerprint: uniqueString,
-            nickname: autoNickname,
-            location_city: 'Unknown',
-            location_country: 'Unknown',
-            country_code: 'US', // Default to US for now since we don't ask for country
-            lip_image_url: activeCropUrl,
-            face_image_url: uploadedImage || '',
-            allow_full_face_public: allowPublicFace,
-            score: result.totalScore,
-            rank: 0, // Will calc below
-            features: features,
-            scoringResult: result,
-            isCurrentUser: true
-        };
+            // 6. Create User Profile
+            const newUser: UserProfile = {
+                id: Date.now().toString(),
+                email: userEmail,
+                fingerprint: uniqueString,
+                nickname: autoNickname,
+                location_city: 'Unknown',
+                location_country: 'Unknown',
+                country_code: 'US',
+                lip_image_url: activeCropUrl,
+                face_image_url: uploadedImage || '',
+                allow_full_face_public: allowPublicFace,
+                score: result.totalScore,
+                rank: 0,
+                features: features,
+                scoringResult: result,
+                isCurrentUser: true
+            };
 
-        // 6. Update Leaderboard
-        const updatedUsers = [...users, newUser].sort((a, b) => b.score - a.score);
-        const rank = updatedUsers.findIndex(u => u.id === newUser.id) + 1;
-        newUser.rank = rank;
-        
-        // Update ranks for everyone
-        updatedUsers.forEach((u, idx) => u.rank = idx + 1);
+            const updatedUsers = [...users, newUser].sort((a, b) => b.score - a.score);
+            updatedUsers.forEach((u, idx) => u.rank = idx + 1);
 
-        setUsers(updatedUsers);
-        setCurrentUser(newUser);
+            setUsers(updatedUsers);
+            setCurrentUser(newUser);
+            setIsProcessing(false);
+            setCurrentView('result');
+        }, 2000);
+
+    } catch (e) {
+        console.error("Analysis failed", e);
         setIsProcessing(false);
-        setCurrentView('result');
-    }, 2500);
+    }
   };
 
   // Render Helpers
@@ -193,8 +198,8 @@ const App = () => {
              </div>
          )}
       </div>
-      <h3 className="text-xl font-bold text-white mt-8 animate-pulse">Analyzing Geometry...</h3>
-      <p className="text-gray-500 mt-2 text-sm">Checking symmetry, Cupid's bow, and consistency.</p>
+      <h3 className="text-xl font-bold text-white mt-8 animate-pulse">Analyzing Pixels...</h3>
+      <p className="text-gray-500 mt-2 text-sm">Scanning redness, contrast, and texture.</p>
     </div>
   );
 
