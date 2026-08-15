@@ -3,5 +3,6 @@
   "description": "AI-powered lip analysis application featuring real-time pixel scanning for color, contrast, and texture to determine aesthetic scores.",
   "requestFramePermissions": [
     "camera"
-  ]
+  ],
+  "majorCapabilities": []
 }

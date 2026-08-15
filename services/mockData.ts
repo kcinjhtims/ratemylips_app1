@@ -1,7 +1,43 @@
 
-import { UserProfile } from '../types';
+import { UserProfile, ArchitectProfile } from '../types';
 
-export const MOCK_LEADERBOARD: UserProfile[] = [
+export const MOCK_ARCHITECTS: ArchitectProfile[] = [
+  {
+    id: 'a1',
+    name: 'Dr. Julian Thorne',
+    clinic: 'The Sculpt Center',
+    specialty: 'Lip Reconstruction',
+    location: 'Beverly Hills, CA',
+    engineeringScore: 98.2,
+    totalProcedures: 1250,
+    verified: true,
+    portfolio: ['https://picsum.photos/id/1/200/200']
+  },
+  {
+    id: 'a2',
+    name: 'Nurse Elena R.',
+    clinic: 'Pout Perfection',
+    specialty: 'Russian Technique',
+    location: 'Miami, FL',
+    engineeringScore: 96.5,
+    totalProcedures: 890,
+    verified: true,
+    portfolio: ['https://picsum.photos/id/2/200/200']
+  },
+  {
+    id: 'a3',
+    name: 'Aesthetic Studio X',
+    clinic: 'Studio X',
+    specialty: 'Natural Enhancement',
+    location: 'London, UK',
+    engineeringScore: 94.1,
+    totalProcedures: 2100,
+    verified: true,
+    portfolio: ['https://picsum.photos/id/3/200/200']
+  }
+];
+
+const BASE_PROFILES: UserProfile[] = [
   {
     id: '1',
     email: 'bella.s@example.com',
@@ -10,6 +46,7 @@ export const MOCK_LEADERBOARD: UserProfile[] = [
     location_city: 'Milan',
     location_country: 'Italy',
     country_code: 'IT',
+    status: 'Natural',
     score: 9850,
     rank: 1,
     lip_image_url: 'https://picsum.photos/id/64/200/100',
@@ -21,6 +58,14 @@ export const MOCK_LEADERBOARD: UserProfile[] = [
       lipArchetype: 'The Classic',
       cosmeticIntegrity: 98,
       goldenRatioMatch: 98,
+      // Fix: Added missing diagnostics property for ScoringResult
+      diagnostics: {
+        projection: 98,
+        migration: 99,
+        textureIntegrity: 98,
+        definition: 97,
+        volumetricBalance: 99
+      },
       dimensionScores: {
         symmetry: 99, proportionHorizontal: 95, proportionVertical: 98, shape: 97, texture: 96, color: 95, naturalness: 98, pose: 100
       },
@@ -38,6 +83,7 @@ export const MOCK_LEADERBOARD: UserProfile[] = [
     location_city: 'London',
     location_country: 'UK',
     country_code: 'GB',
+    status: 'Filled',
     score: 9720,
     rank: 2,
     lip_image_url: 'https://picsum.photos/id/338/200/100',
@@ -49,6 +95,14 @@ export const MOCK_LEADERBOARD: UserProfile[] = [
       lipArchetype: 'The Hollywood',
       cosmeticIntegrity: 95,
       goldenRatioMatch: 95,
+      // Fix: Added missing diagnostics property for ScoringResult
+      diagnostics: {
+        projection: 94,
+        migration: 92,
+        textureIntegrity: 95,
+        definition: 96,
+        volumetricBalance: 95
+      },
       dimensionScores: {
         symmetry: 95, proportionHorizontal: 92, proportionVertical: 96, shape: 98, texture: 94, color: 96, naturalness: 95, pose: 99
       },
@@ -57,89 +111,7 @@ export const MOCK_LEADERBOARD: UserProfile[] = [
         philtrumDepth: 94, vermilionContrast: 95, lateralVolume: 85, lowerLipPout: 92, verticalLineScore: 88, naturalGloss: 90, skinHealth: 94, pigmentationDepth: 96, gradientSmoothness: 92, upperLowerBalance: 95, cornerUplift: 80
       }
     }
-  },
-  {
-    id: '3',
-    email: 'lipglow99@example.com',
-    fingerprint: 'mock_fp_3',
-    nickname: 'LipGlow99',
-    location_city: 'Seoul',
-    location_country: 'South Korea',
-    country_code: 'KR',
-    score: 9650,
-    rank: 3,
-    lip_image_url: 'https://picsum.photos/id/349/200/100',
-    face_image_url: 'https://picsum.photos/id/349/600/600',
-    allow_full_face_public: true,
-    scoringResult: {
-        totalScore: 9650,
-        rankScore: 96.5,
-        lipArchetype: 'The Pillowy',
-        cosmeticIntegrity: 90,
-        goldenRatioMatch: 90,
-        dimensionScores: {
-          symmetry: 96, proportionHorizontal: 94, proportionVertical: 95, shape: 94, texture: 98, color: 93, naturalness: 96, pose: 98
-        },
-        details: {
-          cupidBowPrecision: 92, cornerDefinition: 90, verticalRatio: 95, smoothness: 99, hydration: 98, borderDefinition: 94, vitality: 92, uniformity: 96, symmetryBalance: 96, widthProportion: 94,
-          philtrumDepth: 85, vermilionContrast: 88, lateralVolume: 90, lowerLipPout: 94, verticalLineScore: 95, naturalGloss: 98, skinHealth: 99, pigmentationDepth: 90, gradientSmoothness: 95, upperLowerBalance: 96, cornerUplift: 90
-        }
-      }
-  },
-  {
-    id: '4',
-    email: 'rougex@example.com',
-    fingerprint: 'mock_fp_4',
-    nickname: 'RougeX',
-    location_city: 'Paris',
-    location_country: 'France',
-    country_code: 'FR',
-    score: 9400,
-    rank: 4,
-    lip_image_url: 'https://picsum.photos/id/436/200/100',
-    face_image_url: 'https://picsum.photos/id/436/600/600',
-    allow_full_face_public: true,
-    scoringResult: {
-        totalScore: 9400,
-        rankScore: 94.0,
-        lipArchetype: 'The Classic',
-        cosmeticIntegrity: 97,
-        goldenRatioMatch: 88,
-        dimensionScores: {
-          symmetry: 92, proportionHorizontal: 90, proportionVertical: 93, shape: 95, texture: 90, color: 98, naturalness: 92, pose: 95
-        },
-        details: {
-          cupidBowPrecision: 96, cornerDefinition: 94, verticalRatio: 93, smoothness: 88, hydration: 90, borderDefinition: 92, vitality: 99, uniformity: 97, symmetryBalance: 92, widthProportion: 90,
-          philtrumDepth: 92, vermilionContrast: 95, lateralVolume: 80, lowerLipPout: 88, verticalLineScore: 85, naturalGloss: 88, skinHealth: 90, pigmentationDepth: 99, gradientSmoothness: 94, upperLowerBalance: 93, cornerUplift: 75
-        }
-      }
-  },
-  {
-    id: '5',
-    email: 'smilehigh@example.com',
-    fingerprint: 'mock_fp_5',
-    nickname: 'SmileHigh',
-    location_city: 'Los Angeles',
-    location_country: 'USA',
-    country_code: 'US',
-    score: 9105,
-    rank: 5,
-    lip_image_url: 'https://picsum.photos/id/129/200/100',
-    face_image_url: 'https://picsum.photos/id/129/600/600',
-    allow_full_face_public: false,
-    scoringResult: {
-        totalScore: 9105,
-        rankScore: 91.05,
-        lipArchetype: 'The Wide Smile',
-        cosmeticIntegrity: 85,
-        goldenRatioMatch: 85,
-        dimensionScores: {
-          symmetry: 90, proportionHorizontal: 88, proportionVertical: 90, shape: 85, texture: 92, color: 88, naturalness: 94, pose: 95
-        },
-        details: {
-          cupidBowPrecision: 82, cornerDefinition: 85, verticalRatio: 90, smoothness: 92, hydration: 93, borderDefinition: 88, vitality: 86, uniformity: 90, symmetryBalance: 90, widthProportion: 88,
-          philtrumDepth: 80, vermilionContrast: 82, lateralVolume: 84, lowerLipPout: 90, verticalLineScore: 92, naturalGloss: 88, skinHealth: 93, pigmentationDepth: 85, gradientSmoothness: 89, upperLowerBalance: 91, cornerUplift: 95
-        }
-      }
   }
 ];
+
+export const MOCK_LEADERBOARD = [...BASE_PROFILES];
